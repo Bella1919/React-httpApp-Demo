@@ -2,6 +2,17 @@ import React, { Component } from "react";
 import axios from 'axios';
 import "./App.css";
 
+//This is a global erro interceptor, this part will be call first when error happen. But the control will path back to handleDelete. Cause of it did the catch(ex) to catch the error.
+axios.interceptors.response.use( null,error=>{
+  const expectedError = error.response && error.response.status >=400  && error.response.status <500;
+  //!expectedError = unexpectedError.
+  if(!expectedError){
+    console.log("Logging the error",error);
+    alert("An unexpected error occurred");
+  };
+  return Promise.reject(error);
+})
+
 const apiEndpoint = 'https://jsonplaceholder.typicode.com/posts';
 class App extends Component {
   state = {
@@ -49,12 +60,35 @@ class App extends Component {
   };
 
   handleDelete = async post => {
-    //First step is delete the post from.
-    await axios.delete(apiEndpoint + '/' + post.id);
-    //Second step is delete from  the local form.
-    //We want to get all post exact the one which going to delete. And then update the posts.
+    //(2)Optmistic update delete more fast than (1).
+    const originalPosts = this.state.posts;
     const posts = this.state.posts.filter(p=>p.id !== post.id);
     this.setState({posts});
+    //cause we need test if we got error what kind of that error and undo the changes we did, so here we need to use try-catch block to catch the error.
+    try{
+      await axios.delete(apiEndpoint + '/' +post.id);
+    }
+    catch(ex){
+      // console.log("HANDLE DELETE CATCH BLOCK");
+      if(ex.response && ex.response.status === 404)
+        alert("This post has already been deleted.");
+      // ex.request 
+      // ex.response
+      //Expected(404:not found,400:bad request)-client error
+      //-Display a specific error message
+      //Unexpected(network down, server down, db down, bug)-unormal error
+      //-Log them
+      //-Display a generic and friendly error message
+      // alert('Something failed while deleting a post');
+      this.setState({ posts:originalPosts });
+    }
+    //(1)pessimistic update
+    // //First step is delete the post from.
+    // await axios.delete(apiEndpoint + '/' + post.id);
+    // //Second step is delete from  the local form.
+    // //We want to get all post exact the one which going to delete. And then update the posts.
+    // const posts = this.state.posts.filter(p=>p.id !== post.id);
+    // this.setState({posts});
   };
 
   render() {
