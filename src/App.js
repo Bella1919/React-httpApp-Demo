@@ -1,19 +1,25 @@
 import React, { Component } from "react";
-import axios from 'axios';
+//The alert of  react-toastify just can working with edition in 4.1 not for newest version.
+import { ToastContainer } from 'react-toastify';
+import config from './config.json';
+import http from './services/httpService';
+import 'react-toastify/dist/ReactToastify.css';
 import "./App.css";
 
+// We remove this part to httpService component.
 //This is a global erro interceptor, this part will be call first when error happen. But the control will path back to handleDelete. Cause of it did the catch(ex) to catch the error.
-axios.interceptors.response.use( null,error=>{
-  const expectedError = error.response && error.response.status >=400  && error.response.status <500;
-  //!expectedError = unexpectedError.
-  if(!expectedError){
-    console.log("Logging the error",error);
-    alert("An unexpected error occurred");
-  };
-  return Promise.reject(error);
-})
+// axios.interceptors.response.use( null,error=>{
+//   const expectedError = error.response && error.response.status >=400  && error.response.status <500;
+//   //!expectedError = unexpectedError.
+//   if(!expectedError){
+//     console.log("Logging the error",error);
+//     alert("An unexpected error occurred");
+//   };
+//   return Promise.reject(error);
+// })
+//We remove this part to config component.
+// const apiEndpoint = 'https://jsonplaceholder.typicode.com/posts';
 
-const apiEndpoint = 'https://jsonplaceholder.typicode.com/posts';
 class App extends Component {
   state = {
     posts: []
@@ -25,7 +31,7 @@ class App extends Component {
     //Asynchronize operation is a operation that going to complete in the future.
     //When create promise it will in pending.Pending will be change to either resolved(success) or rejected(failure) case.
     //In axios geting data use 'get'.
-    const promise = axios.get(apiEndpoint);
+    const promise = http.get(config.apiEndpoint);
     //prmise.then()is a old way to get the result. 
     //Await is new way to do that.After get the promise result, we store it as response.
     //We use data which from response to rename as posts.
@@ -41,7 +47,7 @@ class App extends Component {
     //follow the data property to create the object
     const ojc = {title:'a',bady:'b'}
     //In axios create data use 'post'.
-    const {data:post} = await axios.post(apiEndpoint,ojc)
+    const {data:post} = await http.post(config.apiEndpoint,ojc)
     // console.log(post);
     const posts = [post,...this.state.posts];
     this.setState({posts});
@@ -50,7 +56,7 @@ class App extends Component {
   handleUpdate = async post => {
     post.title = "UPDATED";
     //In axios updating data use 'put' and 'patch'. The 'put' update the hole property. The 'patch' update a single or several property.
-    await axios.put(apiEndpoint + '/' + post.id, post);
+    await http.put(config.apiEndpoint + '/' + post.id, post);
     // axios.patch(apiEndpoint+'/'+post.id,{title:post.title});
     const posts = [...this.state.posts];
     //We use the index to find location of which one is the update one.
@@ -66,7 +72,7 @@ class App extends Component {
     this.setState({posts});
     //cause we need test if we got error what kind of that error and undo the changes we did, so here we need to use try-catch block to catch the error.
     try{
-      await axios.delete(apiEndpoint + '/' +post.id);
+      await http.delete(config.apiEndpoint + '/' +post.id);
     }
     catch(ex){
       // console.log("HANDLE DELETE CATCH BLOCK");
@@ -94,6 +100,7 @@ class App extends Component {
   render() {
     return (
       <React.Fragment>
+        <ToastContainer />
         <button className="btn btn-primary" onClick={this.handleAdd}>
           Add
         </button>
