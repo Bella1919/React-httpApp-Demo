@@ -7,7 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import "./App.css";
 
 // We remove this part to httpService component.
-//This is a global erro interceptor, this part will be call first when error happen. But the control will path back to handleDelete. Cause of it did the catch(ex) to catch the error.
+//This is a global error interceptor, this part will be call first when error happen. But the control will path back to handleDelete. Cause of it did the catch(ex) to catch the error.
 // axios.interceptors.response.use( null,error=>{
 //   const expectedError = error.response && error.response.status >=400  && error.response.status <500;
 //   //!expectedError = unexpectedError.
@@ -40,6 +40,7 @@ class App extends Component {
     // console.log(response)
     //Finally to use setSate to update the posts
     this.setState({posts});
+    console.log(posts)
 
   };
   //Cause the handleAdd is a basicly property that we settinga as function. So we need put async in middle.
